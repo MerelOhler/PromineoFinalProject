@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import com.shortredvan.entity.LoginUser;
 import com.shortredvan.entity.Party;
 import com.shortredvan.exception.DuplicateFoundException;
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
@@ -196,11 +197,48 @@ public interface PartyController {
               name = "id", 
               allowEmptyValue = false, 
               required = true, 
-              description = "Login user Id")
+              description = "Party Id")
           }
   )
   @DeleteMapping()
   public String deleteParty(@RequestParam int id);
+  
+  @Operation(
+      summary = "Find all parties belonging to a login user id",
+      description = "returns a list of parties that a login user belongs to",
+      responses = {
+          @ApiResponse(
+              responseCode = "200", 
+              description = "list of loginusers has been returned.", 
+              content = @Content(
+                  mediaType = "application/json", 
+                  schema = @Schema(implementation = Party.class))),
+          @ApiResponse(
+              responseCode = "400", 
+              description = "The request parameters are invalid.", 
+              content = @Content(
+                  mediaType = "application/json")),
+          @ApiResponse(
+              responseCode = "404", 
+              description = "No parties were found with the input criteria.", 
+              content = @Content(
+                  mediaType = "application/json")),
+          @ApiResponse(
+              responseCode = "500", 
+              description = "An unplanned error occurred.", 
+              content = @Content(
+                  mediaType = "application/json"))
+      },
+      parameters = {
+          @Parameter(
+              name = "id", 
+              allowEmptyValue = false, 
+              required = true, 
+              description = "LoginUser Id")
+          }
+  )
+  @GetMapping("/getParties")
+  public List<Party> getpartiesByLU (@RequestParam int id);
   
   //@formatter:on
 

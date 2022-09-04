@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import com.shortredvan.ShortRedVan;
 import com.shortredvan.controller.PartyController;
@@ -46,6 +47,11 @@ public class PartyControllerImpl implements PartyController {
     getCurrentLU();
     return new ResponseEntity<Party>(partyService.getPartyById(id),HttpStatus.OK);
   }
+  
+  @Override
+  public List<Party> getpartiesByLU (@RequestParam int id){
+    return partyService.getPartiesByLU(id);
+  }
 
   @Override
   public ResponseEntity<Party> createParty(Party party) throws DuplicateFoundException {
@@ -74,7 +80,7 @@ public class PartyControllerImpl implements PartyController {
   public String deleteParty(int id) {
     getCurrentLU();
     partyService.deletePartyById(id, currentLogin);
-    return "LoginUser has been deleted";
+    return "Party has been deleted";
   }
-
+  
 }

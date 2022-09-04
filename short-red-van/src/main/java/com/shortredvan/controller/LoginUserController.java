@@ -1,21 +1,17 @@
 package com.shortredvan.controller;
 
 import java.util.List;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import com.shortredvan.entity.CurrentLogin;
 import com.shortredvan.entity.LoginUser;
+import com.shortredvan.entity.Party;
 import com.shortredvan.exception.DuplicateFoundException;
-import com.shortredvan.exception.NotLoggedInException;
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.info.Info;
@@ -98,6 +94,43 @@ public interface LoginUserController {
   ResponseEntity<LoginUser> getLUById(@RequestParam int id);
   
   @Operation(
+      summary = "Returns LoginUsers that are in the party",
+      description = "Returns a list of LoginUsers given an party id",
+      responses = {
+          @ApiResponse(
+              responseCode = "200", 
+              description = "A list of LoginUsers is returned.", 
+              content = @Content(
+                  mediaType = "application/json", 
+                  schema = @Schema(implementation = LoginUser.class))),
+          @ApiResponse(
+              responseCode = "400", 
+              description = "The request parameters are invalid.", 
+              content = @Content(
+                  mediaType = "application/json")),
+          @ApiResponse(
+              responseCode = "404", 
+              description = "No Login users were found with the input criteria.", 
+              content = @Content(
+                  mediaType = "application/json")),
+          @ApiResponse(
+              responseCode = "500", 
+              description = "An unplanned error occurred.", 
+              content = @Content(
+                  mediaType = "application/json"))
+      },
+      parameters = {
+          @Parameter(
+            name = "id", 
+            allowEmptyValue = false, 
+            required = true, 
+            description = "Party id")
+      }
+  )
+  @GetMapping("/InParty")
+  public List<LoginUser> getLoginUsers4PartyId(@RequestParam int id);
+  
+  @Operation(
       summary = "User is able to login with an existing LoginUser",
       description = "returns whether login was successfull or not",
       responses = {
@@ -166,7 +199,8 @@ public interface LoginUserController {
   
   @Operation(
       summary = "User is able to add a new login user and log in as the new loginuser",
-      description = "returns the new loginuser",
+      description = "Creates new login user and logs in as the new login user. Login user can only be created"
+          + "by the user themselves.",
       responses = {
           @ApiResponse(
               responseCode = "201", 
@@ -224,25 +258,18 @@ public interface LoginUserController {
               description = "An unplanned error occurred.", 
               content = @Content(
                   mediaType = "application/json"))
-      },
-      parameters = {
-          @Parameter(
-              name = "id", 
-              allowEmptyValue = false, 
-              required = true, 
-              description = "Login user Id")
-          }
+      }
   )
   @PutMapping()
-  public ResponseEntity<LoginUser> updateLU (@RequestParam int id, @RequestBody LoginUser loginUser) throws DuplicateFoundException;
+  public ResponseEntity<LoginUser> updateLU (@RequestBody LoginUser loginUser) throws DuplicateFoundException;
   
   @Operation(
-      summary = "User is able to delete an existing login user",
-      description = "returns a message whether the user has been deleted",
+      summary = "LoginUser is DATE deleted, and is not actually deleted",
+      description = "returns a message whether the user has been deleted. User can only delete their own account",
       responses = {
           @ApiResponse(
               responseCode = "200", 
-              description = "Login user has successfully been deleted.", 
+              description = "Login user has successfully been date deleted.", 
               content = @Content(
                   mediaType = "application/json", 
                   schema = @Schema(implementation = LoginUser.class))),
@@ -261,17 +288,10 @@ public interface LoginUserController {
               description = "An unplanned error occurred.", 
               content = @Content(
                   mediaType = "application/json"))
-      },
-      parameters = {
-          @Parameter(
-              name = "id", 
-              allowEmptyValue = false, 
-              required = true, 
-              description = "Login user Id")
-          }
+      }
   )
   @DeleteMapping()
-  public String deleteLU(@RequestParam int id);
+  public String deleteLU();
 
   //@formatter:on
 

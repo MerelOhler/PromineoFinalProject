@@ -46,6 +46,9 @@ public class LoginUser {
   @Column(name = "ModifiedBy")
   @Schema(accessMode = AccessMode.READ_ONLY)
   private Integer modifiedBy;
+  @Column(name = "DateDeleted")
+  @Schema(accessMode = AccessMode.READ_ONLY)
+  private Timestamp dateDeleted;
   
 
 }

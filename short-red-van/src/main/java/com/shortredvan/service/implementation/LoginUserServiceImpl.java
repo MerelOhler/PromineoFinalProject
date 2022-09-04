@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import com.shortredvan.entity.CurrentLogin;
 import com.shortredvan.entity.LoginUser;
+import com.shortredvan.entity.Party;
 import com.shortredvan.exception.DuplicateFoundException;
 import com.shortredvan.exception.ResourceNotFoundException;
 import com.shortredvan.repository.LoginUserRepository;
@@ -37,6 +38,11 @@ public class LoginUserServiceImpl implements LoginUserService {
   @Override
   public LoginUser getLoginUserByEmail(String email) {
     return loginUserRepository.findByEmail(email).orElseThrow(() -> new ResourceNotFoundException("LoginUser","Email",email));
+  }
+  
+  @Override
+  public List<LoginUser> getLoginUsers4PartyId(int id) {
+    return loginUserRepository.findByPartyId(id);
   }
 
   @Override
@@ -72,8 +78,9 @@ public class LoginUserServiceImpl implements LoginUserService {
   public void deleteLoginUserById(int id, CurrentLogin currentLogin) {
     LoginUser existingLU = loginUserRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("LoginUserID","ID", id));
     existingLU.setModifiedBy(currentLogin.getLoginUserId());
+    existingLU.setDateModified(new Timestamp(System.currentTimeMillis()));
+    existingLU.setDateDeleted(new Timestamp(System.currentTimeMillis()));
     loginUserRepository.save(existingLU);
-    loginUserRepository.deleteById(id);
   }
 
 

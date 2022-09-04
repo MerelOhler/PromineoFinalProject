@@ -3,6 +3,7 @@ package com.shortredvan.service;
 import java.util.List;
 import com.shortredvan.entity.CurrentLogin;
 import com.shortredvan.entity.LoginUser;
+import com.shortredvan.entity.Party;
 
 public interface LoginUserService {
   
@@ -17,5 +18,9 @@ public interface LoginUserService {
   public void deleteLoginUserById(int id, CurrentLogin currentLogin);
   
   public LoginUser getLoginUserByEmail(String email);
+
+  public List<LoginUser> getLoginUsers4PartyId(int id);
+  
+  //public PartyLoginUser addParty();
 
 }
