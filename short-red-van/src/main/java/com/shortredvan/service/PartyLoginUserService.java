@@ -1,9 +1,11 @@
 package com.shortredvan.service;
 
 import java.util.List;
-import com.shortredvan.entity.CurrentLogin;
+import com.shortredvan.entity.LoginUser;
 import com.shortredvan.entity.PartyLoginUser;
 import com.shortredvan.entity.PartyLoginUserKey;
+import com.shortredvan.exception.DuplicateFoundException;
+import com.shortredvan.exception.FKConstraintException;
 
 
 public interface PartyLoginUserService {
@@ -16,16 +18,16 @@ public interface PartyLoginUserService {
   
   public List<PartyLoginUser> getAllPLUsByPartyId(int partyId);
   
-  public PartyLoginUser createPLU(PartyLoginUser plu);
+  public PartyLoginUser createPLU(PartyLoginUser plu) throws FKConstraintException;
   
   //no updates only deletes
   
-  public void deletePLUsByLUId(int id, CurrentLogin currentLogin);
+  public void deletePLUsByLUId(LoginUser currentLogin);
   
-  public void deletePLUsByPartyId(int id, CurrentLogin currentLogin);
+  public void deletePLUsByPartyId(int id, LoginUser currentLogin);
   
-  public void addToDeleted (PartyLoginUser plu, CurrentLogin currentLogin); 
+  public void addToDeleted (PartyLoginUser plu, LoginUser currentLogin); 
   
-  public void deletePLU (PartyLoginUser plu, CurrentLogin currentLogin);
+  public void deletePLU (PartyLoginUser plu, LoginUser currentLogin);
 
 }

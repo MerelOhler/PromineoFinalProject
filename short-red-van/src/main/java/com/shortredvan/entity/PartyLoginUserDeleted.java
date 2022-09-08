@@ -23,7 +23,6 @@ public class PartyLoginUserDeleted {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   @Schema(accessMode = AccessMode.READ_ONLY)
-  @Column(name = "PartyLoginUserDeletedId")
   private int partyLoginUserDeletedId;
   
   @Column(name = "PartyId")

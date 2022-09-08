@@ -8,10 +8,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import com.shortredvan.ShortRedVan;
 import com.shortredvan.controller.PartyLoginUserController;
-import com.shortredvan.entity.CurrentLogin;
+import com.shortredvan.entity.LoginUser;
 import com.shortredvan.entity.PartyLoginUser;
 import com.shortredvan.entity.PartyLoginUserKey;
 import com.shortredvan.exception.DuplicateFoundException;
+import com.shortredvan.exception.FKConstraintException;
 import com.shortredvan.exception.NotLoggedInException;
 import com.shortredvan.service.PartyLoginUserService;
 
@@ -19,7 +20,7 @@ import com.shortredvan.service.PartyLoginUserService;
 @RequestMapping("/partyloginuser")
 public class PartyLoginUserControllerImpl implements PartyLoginUserController {
   private PartyLoginUserService pluService;
-  private CurrentLogin currentLogin;
+  private LoginUser currentLogin;
   private ShortRedVan srv;
   
   @Autowired
@@ -30,7 +31,7 @@ public class PartyLoginUserControllerImpl implements PartyLoginUserController {
   
   private void getCurrentLU() {
     currentLogin = srv.getCurrentLogin();
-    if(currentLogin == null) {
+    if(currentLogin == null || currentLogin.getLoginUserId() == 0) {
       throw new NotLoggedInException();
     }
   }
@@ -52,7 +53,7 @@ public class PartyLoginUserControllerImpl implements PartyLoginUserController {
   }
 
   @Override
-  public ResponseEntity<PartyLoginUser> createPLU(int partyId, int loginUserId) throws DuplicateFoundException {
+  public ResponseEntity<PartyLoginUser> createPLU(int partyId, int loginUserId) throws DuplicateFoundException, FKConstraintException {
     getCurrentLU();
     PartyLoginUserKey id = new PartyLoginUserKey();
     id.setPartyId(partyId);
@@ -61,7 +62,6 @@ public class PartyLoginUserControllerImpl implements PartyLoginUserController {
     plu.setId(id);
     plu.setCreatedBy(currentLogin.getLoginUserId());
     ResponseEntity<PartyLoginUser> response = new ResponseEntity<PartyLoginUser>(pluService.createPLU(plu),HttpStatus.CREATED);
-    System.out.println(response.getBody().getCreatedBy());
     if(response.getBody() == null) {
       throw new DuplicateFoundException("PartyLoginUser", "Party and LoginUser", plu.getId().getPartyId() + " and " + plu.getId().getLoginUserId());
     }

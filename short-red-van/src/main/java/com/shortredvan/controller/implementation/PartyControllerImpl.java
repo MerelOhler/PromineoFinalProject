@@ -9,7 +9,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import com.shortredvan.ShortRedVan;
 import com.shortredvan.controller.PartyController;
-import com.shortredvan.entity.CurrentLogin;
 import com.shortredvan.entity.LoginUser;
 import com.shortredvan.entity.Party;
 import com.shortredvan.exception.DuplicateFoundException;
@@ -19,7 +18,7 @@ import com.shortredvan.service.PartyService;
 @RestController
 @RequestMapping("/party")
 public class PartyControllerImpl implements PartyController {
-  private CurrentLogin currentLogin;
+  private LoginUser currentLogin;
   private ShortRedVan srv;
   private PartyService partyService;
   
@@ -31,7 +30,7 @@ public class PartyControllerImpl implements PartyController {
   
   private void getCurrentLU() {
     currentLogin = srv.getCurrentLogin();
-    if(currentLogin == null) {
+    if(currentLogin == null || currentLogin.getLoginUserId() == 0) {
       throw new NotLoggedInException();
     }
   }
@@ -50,6 +49,7 @@ public class PartyControllerImpl implements PartyController {
   
   @Override
   public List<Party> getpartiesByLU (@RequestParam int id){
+    getCurrentLU();
     return partyService.getPartiesByLU(id);
   }
 

@@ -1,22 +1,22 @@
 package com.shortredvan;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import com.shortredvan.entity.CurrentLogin;
+import com.shortredvan.entity.LoginUser;
 
 @SpringBootApplication
 public class ShortRedVan {
   
-  CurrentLogin currentLogin;
+  LoginUser currentLogin;
   
   public static void main(String[] args) {
     SpringApplication.run(ShortRedVan.class, args);
   }
   
-  public CurrentLogin getCurrentLogin() {
+  public LoginUser getCurrentLogin() {
     return currentLogin;
   }
   
-  public void setCurrentLogin (CurrentLogin currentLogin) {
+  public void setCurrentLogin (LoginUser currentLogin) {
     this.currentLogin = currentLogin;
   }
 

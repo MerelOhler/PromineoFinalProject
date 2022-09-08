@@ -4,25 +4,24 @@ import java.sql.Timestamp;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import com.shortredvan.entity.CurrentLogin;
 import com.shortredvan.entity.LoginUser;
-import com.shortredvan.entity.Party;
 import com.shortredvan.exception.DuplicateFoundException;
 import com.shortredvan.exception.ResourceNotFoundException;
 import com.shortredvan.repository.LoginUserRepository;
 import com.shortredvan.service.LoginUserService;
+import com.shortredvan.service.PartyLoginUserService;
 
 @Service
 public class LoginUserServiceImpl implements LoginUserService {
   
   private LoginUserRepository loginUserRepository;
+  private PartyLoginUserService pluService;
   
   @Autowired
-  public LoginUserServiceImpl(LoginUserRepository loginUserRepository) {
+  public LoginUserServiceImpl(LoginUserRepository loginUserRepository, PartyLoginUserService pluService) {
     this.loginUserRepository = loginUserRepository;
+    this.pluService = pluService;
   }
 
   @Override
@@ -56,7 +55,7 @@ public class LoginUserServiceImpl implements LoginUserService {
   }
 
   @Override
-  public LoginUser updateLoginUser(LoginUser loginUser, int id, CurrentLogin currentLogin) {
+  public LoginUser updateLoginUser(LoginUser loginUser, int id, LoginUser currentLogin) {
     try {
       LoginUser existingLU = loginUserRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("LoginUserID","ID", id));
       existingLU.setEmail(loginUser.getEmail());
@@ -75,12 +74,15 @@ public class LoginUserServiceImpl implements LoginUserService {
   }
 
   @Override
-  public void deleteLoginUserById(int id, CurrentLogin currentLogin) {
-    LoginUser existingLU = loginUserRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("LoginUserID","ID", id));
+  public void deleteLoginUserById(LoginUser currentLogin) {
+    pluService.deletePLUsByLUId(currentLogin);
+    LoginUser existingLU = loginUserRepository.findById(currentLogin.getLoginUserId()).orElseThrow(() -> new ResourceNotFoundException("LoginUserID","ID", currentLogin.getLoginUserId()));
     existingLU.setModifiedBy(currentLogin.getLoginUserId());
     existingLU.setDateModified(new Timestamp(System.currentTimeMillis()));
     existingLU.setDateDeleted(new Timestamp(System.currentTimeMillis()));
     loginUserRepository.save(existingLU);
+    
+    
   }
 
 

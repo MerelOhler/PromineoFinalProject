@@ -19,6 +19,7 @@ public class DuplicateFoundException extends SQLIntegrityConstraintViolationExce
     this.resourceName = resourceName;
     this.fieldName = fieldName;
     this.fieldValue = fieldValue;
+    System.err.println(getMessage());
   }
 
   public String getResourceName() {

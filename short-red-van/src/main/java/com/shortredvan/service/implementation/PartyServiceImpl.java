@@ -5,12 +5,11 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
-import com.shortredvan.entity.CurrentLogin;
 import com.shortredvan.entity.LoginUser;
 import com.shortredvan.entity.Party;
-import com.shortredvan.entity.PartyLoginUser;
-import com.shortredvan.entity.PartyLoginUserKey;
+import com.shortredvan.entity.UserRole;
 import com.shortredvan.exception.DuplicateFoundException;
+import com.shortredvan.exception.NoAccessException;
 import com.shortredvan.exception.ResourceNotFoundException;
 import com.shortredvan.repository.PartyRepository;
 import com.shortredvan.service.PartyLoginUserService;
@@ -43,9 +42,9 @@ public class PartyServiceImpl implements PartyService {
   }
 
   @Override
-  public Party createParty(Party party, CurrentLogin currentLogin) {
+  public Party createParty(Party party, LoginUser currentLogin) {
     party.setCreatedBy(currentLogin.getLoginUserId());
-    System.out.println("Party is " + party.toString());
+    party.setAdminUserId(currentLogin.getLoginUserId());
     try {
       return partyRepository.save(party);
     } catch (DataIntegrityViolationException e) {
@@ -55,9 +54,13 @@ public class PartyServiceImpl implements PartyService {
   }
 
   @Override
-  public Party updateParty(Party party, int id, CurrentLogin currentLogin) {
+  public Party updateParty(Party party, int id, LoginUser currentLogin) {
     try {
       Party existingParty = partyRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Party","ID", id));
+      
+      if (currentLogin.getUserRole() != UserRole.ADMIN && existingParty.getAdminUserId() != currentLogin.getLoginUserId()) {
+        throw new NoAccessException("Party", currentLogin.getLoginUserId(), id);
+      }
       existingParty.setName(party.getName());
       existingParty.setAdminUserId(party.getAdminUserId());
       existingParty.setDateModified(new Timestamp(System.currentTimeMillis()));
@@ -70,8 +73,11 @@ public class PartyServiceImpl implements PartyService {
   }
 
   @Override
-  public void deletePartyById(int id, CurrentLogin currentLogin) {
+  public void deletePartyById(int id, LoginUser currentLogin) {
     Party deleteParty = getPartyById(id);
+    if (currentLogin.getUserRole() != UserRole.ADMIN && deleteParty.getAdminUserId() != currentLogin.getLoginUserId()) {
+      throw new NoAccessException("Party", currentLogin.getLoginUserId(), id);
+    }
     updateParty(deleteParty, id, currentLogin);
     pluService.deletePLUsByPartyId(id, currentLogin);
     partyRepository.deleteById(id);

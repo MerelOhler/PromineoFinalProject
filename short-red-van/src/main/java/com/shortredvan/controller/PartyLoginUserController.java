@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import com.shortredvan.entity.PartyLoginUser;
 import com.shortredvan.entity.PartyLoginUserKey;
 import com.shortredvan.exception.DuplicateFoundException;
+import com.shortredvan.exception.FKConstraintException;
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -138,7 +139,7 @@ public interface PartyLoginUserController {
          }
   )
   @PostMapping
-  public ResponseEntity<PartyLoginUser> createPLU (@RequestParam int partyId, @RequestParam int loginUserId) throws DuplicateFoundException;
+  public ResponseEntity<PartyLoginUser> createPLU (@RequestParam int partyId, @RequestParam int loginUserId) throws DuplicateFoundException, FKConstraintException;
 
   @Operation(
       summary = "User is able to delete an existing connection between a party and a loginuser",

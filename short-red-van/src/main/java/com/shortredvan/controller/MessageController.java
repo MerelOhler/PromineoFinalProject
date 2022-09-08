@@ -9,8 +9,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import com.shortredvan.entity.LoginUser;
-import com.shortredvan.entity.Party;
+import com.shortredvan.entity.Message;
 import com.shortredvan.exception.DuplicateFoundException;
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.Operation;
@@ -20,23 +19,22 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.servers.Server;
-
-@RequestMapping("/party")
-@OpenAPIDefinition(info = @Info(title = "Party Service"), 
-  servers = { @Server(url = "http://localhost:8080", description = "Local server.")})
-public interface PartyController {
-  //@formatter:off
   
+@RequestMapping("/message")
+@OpenAPIDefinition(info = @Info(title = "Message Service"), 
+  servers = { @Server(url = "http://localhost:8080", description = "Local server.")})
+public interface MessageController {
+  //@formatter:off
   @Operation(
-      summary = "Returns a list of Parties. User needs to be logged in to access.",
-      description = "Returns a list of Parties",
+      summary = "Returns a list of messages. User needs to be logged in to access.",
+      description = "Returns a list of messages",
       responses = {
           @ApiResponse(
               responseCode = "200", 
-              description = "A list of Parties is returned.", 
+              description = "A list of messages is returned.", 
               content = @Content(
                   mediaType = "application/json", 
-                  schema = @Schema(implementation = Party.class))),
+                  schema = @Schema(implementation = Message.class))),
           @ApiResponse(
               responseCode = "400", 
               description = "The request parameters are invalid.", 
@@ -49,7 +47,7 @@ public interface PartyController {
                   mediaType = "application/json")),
           @ApiResponse(
               responseCode = "404", 
-              description = "No Party was found with the input criteria.", 
+              description = "No messages were found with the input criteria.", 
               content = @Content(
                   mediaType = "application/json")),
           @ApiResponse(
@@ -60,18 +58,18 @@ public interface PartyController {
       }
   )  
   @GetMapping
-  List<Party> getAllParties();
+  public List<Message> getAllMessages();
   
   @Operation(
-      summary = "Returns a Party with that specific id. User needs to be logged in to access.",
-      description = "Returns a a Party given an id",
+      summary = "Returns a message with that specific id. User needs to be logged in to access.",
+      description = "Returns a message given an id",
       responses = {
           @ApiResponse(
               responseCode = "200", 
-              description = "A Party is returned.", 
+              description = "A Message is returned.", 
               content = @Content(
                   mediaType = "application/json", 
-                  schema = @Schema(implementation = Party.class))),
+                  schema = @Schema(implementation = Message.class))),
           @ApiResponse(
               responseCode = "400", 
               description = "The request parameters are invalid.", 
@@ -84,7 +82,49 @@ public interface PartyController {
                   mediaType = "application/json")),
           @ApiResponse(
               responseCode = "404", 
-              description = "No Parties were found with the input criteria.", 
+              description = "No messages were found with the input criteria.", 
+              content = @Content(
+                  mediaType = "application/json")),
+          @ApiResponse(
+              responseCode = "500", 
+              description = "An unplanned error occurred.", 
+              content = @Content(
+                  mediaType = "application/json"))
+      },
+      parameters = {
+          @Parameter(
+            name = "id", 
+            allowEmptyValue = false, 
+            required = true, 
+            description = "Message id")
+      }
+  )
+  @GetMapping("/ByID")
+  ResponseEntity<Message> getMessageById(@RequestParam int id);
+  
+  @Operation(
+      summary = "Returns messages that are in a party. User needs to be logged in to access.",
+      description = "Returns a list of messages given an party id",
+      responses = {
+          @ApiResponse(
+              responseCode = "200", 
+              description = "A list of messages is returned.", 
+              content = @Content(
+                  mediaType = "application/json", 
+                  schema = @Schema(implementation = Message.class))),
+          @ApiResponse(
+              responseCode = "400", 
+              description = "The request parameters are invalid.", 
+              content = @Content(
+                  mediaType = "application/json")),
+          @ApiResponse(
+              responseCode = "403", 
+              description = "The user is not logged in or doesn't have the correct privileges.", 
+              content = @Content(
+                  mediaType = "application/json")),
+          @ApiResponse(
+              responseCode = "404", 
+              description = "No Messages were found with the input criteria.", 
               content = @Content(
                   mediaType = "application/json")),
           @ApiResponse(
@@ -101,54 +141,19 @@ public interface PartyController {
             description = "Party id")
       }
   )
-  @GetMapping("/ByID")
-  ResponseEntity<Party> getPartyById(@RequestParam int id);
+  @GetMapping("/InParty")
+  public List<Message> getMessages4PartyId(@RequestParam int id);
   
   @Operation(
-      summary = "User is able to add a Party. User needs to be logged in to access.",
-      description = "returns the new Party",
-      responses = {
-          @ApiResponse(
-              responseCode = "201", 
-              description = "Party is created.", 
-              content = @Content(
-                  mediaType = "application/json", 
-                  schema = @Schema(implementation = Party.class))),
-          @ApiResponse(
-              responseCode = "400", 
-              description = "The request parameters are invalid.", 
-              content = @Content(
-                  mediaType = "application/json")),
-          @ApiResponse(
-              responseCode = "403", 
-              description = "The user is not logged in or doesn't have the correct privileges.", 
-              content = @Content(
-                  mediaType = "application/json")),
-          @ApiResponse(
-              responseCode = "409", 
-              description = "Provided Party name is not unique.", 
-              content = @Content(
-                  mediaType = "application/json")),
-          @ApiResponse(
-              responseCode = "500", 
-              description = "An unplanned error occurred.", 
-              content = @Content(
-                  mediaType = "application/json"))
-      }   
-  )
-  @PostMapping
-  public ResponseEntity<Party> createParty (Party party) throws DuplicateFoundException;
-  
-  @Operation(
-      summary = "User is able to update an existing party. User needs to be logged in as party admin or general admin to access.",
-      description = "returns the updated Party",
+      summary = "Returns messages that were created by login user. User needs to be logged in to access.",
+      description = "Returns a list of messages given a login user",
       responses = {
           @ApiResponse(
               responseCode = "200", 
-              description = "Party has been updated.", 
+              description = "A list of messages is returned.", 
               content = @Content(
                   mediaType = "application/json", 
-                  schema = @Schema(implementation = Party.class))),
+                  schema = @Schema(implementation = Message.class))),
           @ApiResponse(
               responseCode = "400", 
               description = "The request parameters are invalid.", 
@@ -161,12 +166,7 @@ public interface PartyController {
                   mediaType = "application/json")),
           @ApiResponse(
               responseCode = "404", 
-              description = "No Party was found with the input criteria.", 
-              content = @Content(
-                  mediaType = "application/json")),
-          @ApiResponse(
-              responseCode = "409", 
-              description = "Provided name is not unique.", 
+              description = "No Messages were found with the input criteria.", 
               content = @Content(
                   mediaType = "application/json")),
           @ApiResponse(
@@ -177,25 +177,143 @@ public interface PartyController {
       },
       parameters = {
           @Parameter(
-              name = "id", 
-              allowEmptyValue = false, 
-              required = true, 
-              description = "Party Id")
-          }
+            name = "id", 
+            allowEmptyValue = false, 
+            required = true, 
+            description = "login user id")
+      }
   )
-  @PutMapping()
-  public ResponseEntity<Party> updateParty (@RequestParam int id, @RequestBody Party party) throws DuplicateFoundException;
-
+  @GetMapping("/ByLUId")
+  public List<Message> getMessages4LUId(@RequestParam int id);
+  
   @Operation(
-      summary = "User is able to delete an existing Party. User needs to be logged in as party admin or general admin to access.",
-      description = "returns a message whether the party has been deleted",
+      summary = "Returns messages that are children of a specific message. User needs to be logged in to access.",
+      description = "Returns a list of messages given a parent message",
       responses = {
           @ApiResponse(
               responseCode = "200", 
-              description = "party has successfully been deleted.", 
+              description = "A list of messages is returned.", 
               content = @Content(
                   mediaType = "application/json", 
-                  schema = @Schema(implementation = Party.class))),
+                  schema = @Schema(implementation = Message.class))),
+          @ApiResponse(
+              responseCode = "400", 
+              description = "The request parameters are invalid.", 
+              content = @Content(
+                  mediaType = "application/json")),
+          @ApiResponse(
+              responseCode = "403", 
+              description = "The user is not logged in or doesn't have the correct privileges.", 
+              content = @Content(
+                  mediaType = "application/json")),
+          @ApiResponse(
+              responseCode = "404", 
+              description = "No Messages were found with the input criteria.", 
+              content = @Content(
+                  mediaType = "application/json")),
+          @ApiResponse(
+              responseCode = "500", 
+              description = "An unplanned error occurred.", 
+              content = @Content(
+                  mediaType = "application/json"))
+      },
+      parameters = {
+          @Parameter(
+            name = "id", 
+            allowEmptyValue = false, 
+            required = true, 
+            description = "parent message id")
+      }
+  )
+  @GetMapping("/InParent")
+  public List<Message> getMessages4ParentId(@RequestParam int id);
+  
+  
+  
+  @Operation(
+      summary = "User is able to add a new message to a specific party. User needs to be logged in to access and be in the party.",
+      description = "Creates new message",
+      responses = {
+          @ApiResponse(
+              responseCode = "201", 
+              description = "Message is created.", 
+              content = @Content(
+                  mediaType = "application/json", 
+                  schema = @Schema(implementation = Message.class))),
+          @ApiResponse(
+              responseCode = "400", 
+              description = "The request parameters are invalid.", 
+              content = @Content(
+                  mediaType = "application/json")),
+          @ApiResponse(
+              responseCode = "403", 
+              description = "The user is not logged in or doesn't have the correct privileges.", 
+              content = @Content(
+                  mediaType = "application/json")),
+          @ApiResponse(
+              responseCode = "500", 
+              description = "An unplanned error occurred.", 
+              content = @Content(
+                  mediaType = "application/json"))
+      }     
+  )
+  @PostMapping
+  public ResponseEntity<Message> createMessage (@RequestBody Message message);
+  
+  @Operation(
+      summary = "User is able to update an existing message. User needs to be the author, "
+          + "party admin or general admin to access.",
+      description = "returns the updated message, users can only update their own messages",
+      responses = {
+          @ApiResponse(
+              responseCode = "200", 
+              description = "A login user has been updated.", 
+              content = @Content(
+                  mediaType = "application/json", 
+                  schema = @Schema(implementation = Message.class))),
+          @ApiResponse(
+              responseCode = "400", 
+              description = "The request parameters are invalid.", 
+              content = @Content(
+                  mediaType = "application/json")),
+          @ApiResponse(
+              responseCode = "403", 
+              description = "The user is not logged in or doesn't have the correct privileges.", 
+              content = @Content(
+                  mediaType = "application/json")),
+          @ApiResponse(
+              responseCode = "404", 
+              description = "No Messages were found with the input criteria.", 
+              content = @Content(
+                  mediaType = "application/json")),
+          @ApiResponse(
+              responseCode = "500", 
+              description = "An unplanned error occurred.", 
+              content = @Content(
+                  mediaType = "application/json"))
+      },
+      parameters = {
+          @Parameter(
+            name = "id", 
+            allowEmptyValue = false, 
+            required = true, 
+            description = "message id")
+      }
+  )
+  @PutMapping()
+  public ResponseEntity<Message> updateMessage (@RequestParam int id, @RequestBody Message message);
+  
+  @Operation(
+      summary = "Message is DATE deleted, and is not actually deleted. User needs to be the author, "
+          + "party Admin or general Admin to access.",
+      description = "returns a message whether the message has been deleted. User can only delete their own messages",
+      responses = {
+          @ApiResponse(
+              responseCode = "200", 
+              description = "Login user has successfully been date deleted.", 
+              content = @Content(
+                  mediaType = "application/json", 
+                  schema = @Schema(implementation = Message.class))),
           @ApiResponse(
               responseCode = "400", 
               description = "The request parameters are invalid.", 
@@ -219,57 +337,15 @@ public interface PartyController {
       },
       parameters = {
           @Parameter(
-              name = "id", 
-              allowEmptyValue = false, 
-              required = true, 
-              description = "Party Id")
-          }
+            name = "id", 
+            allowEmptyValue = false, 
+            required = true, 
+            description = "message id")
+      }
   )
   @DeleteMapping()
-  public String deleteParty(@RequestParam int id);
-  
-  @Operation(
-      summary = "Find all parties belonging to a login user id. User needs to be logged in to access.",
-      description = "returns a list of parties that a login user belongs to",
-      responses = {
-          @ApiResponse(
-              responseCode = "200", 
-              description = "list of loginusers has been returned.", 
-              content = @Content(
-                  mediaType = "application/json", 
-                  schema = @Schema(implementation = Party.class))),
-          @ApiResponse(
-              responseCode = "400", 
-              description = "The request parameters are invalid.", 
-              content = @Content(
-                  mediaType = "application/json")),
-          @ApiResponse(
-              responseCode = "403", 
-              description = "The user is not logged in or doesn't have the correct privileges.", 
-              content = @Content(
-                  mediaType = "application/json")),
-          @ApiResponse(
-              responseCode = "404", 
-              description = "No parties were found with the input criteria.", 
-              content = @Content(
-                  mediaType = "application/json")),
-          @ApiResponse(
-              responseCode = "500", 
-              description = "An unplanned error occurred.", 
-              content = @Content(
-                  mediaType = "application/json"))
-      },
-      parameters = {
-          @Parameter(
-              name = "id", 
-              allowEmptyValue = false, 
-              required = true, 
-              description = "LoginUser Id")
-          }
-  )
-  @GetMapping("/getParties")
-  public List<Party> getpartiesByLU (@RequestParam int id);
-  
+  public String deleteMessage(int id);
+
   //@formatter:on
 
 }

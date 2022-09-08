@@ -9,7 +9,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import com.shortredvan.ShortRedVan;
 import com.shortredvan.controller.LoginUserController;
-import com.shortredvan.entity.CurrentLogin;
 import com.shortredvan.entity.LoginUser;
 import com.shortredvan.entity.Party;
 import com.shortredvan.exception.DuplicateFoundException;
@@ -21,12 +20,12 @@ import com.shortredvan.service.LoginUserService;
 public class LoginUserControllerImpl implements LoginUserController{
   
   private LoginUserService loginUserService;
-  private CurrentLogin currentLogin;
+  private LoginUser currentLogin;
   private ShortRedVan srv;
   
   private void getCurrentLU() {
     currentLogin = srv.getCurrentLogin();
-    if(currentLogin == null) {
+    if(currentLogin == null || currentLogin.getLoginUserId() == 0) {
       throw new NotLoggedInException();
     }
   }
@@ -54,20 +53,23 @@ public class LoginUserControllerImpl implements LoginUserController{
   }
   
   public boolean login(String email, String password){
+    //if already logged in then log other user out first
+    logout();
     boolean loggedIn = false;
     ResponseEntity<LoginUser> response = new ResponseEntity<LoginUser>(loginUserService.getLoginUserByEmail(email),HttpStatus.OK);
     
     if(response.getBody().getPassword().equals(password) && response.getBody().getDateDeleted() == null) {
-      currentLogin = new CurrentLogin(response.getBody().getLoginUserId(), response.getBody().getEmail(), response.getBody().getPassword());
+      currentLogin = response.getBody();
       srv.setCurrentLogin(currentLogin);
       loggedIn = true;
     }
     return loggedIn;
   }
   
-  public void logout() {
-    currentLogin = null;
-    srv.setCurrentLogin(null);
+  public String logout() {
+    currentLogin = new LoginUser();
+    srv.setCurrentLogin(currentLogin);
+    return "User has been logged out";
   }
   
   public ResponseEntity<LoginUser> createLU (LoginUser loginUser) throws DuplicateFoundException {
@@ -76,7 +78,7 @@ public class LoginUserControllerImpl implements LoginUserController{
     ResponseEntity<LoginUser> response = new ResponseEntity<LoginUser>(loginUserService.createLoginUser(loginUser),HttpStatus.CREATED);
     if(response.getBody() == null) {
       throw new DuplicateFoundException("LoginUser", "email", loginUser.getEmail());}
-    currentLogin = new CurrentLogin(response.getBody().getLoginUserId(), response.getBody().getEmail(), response.getBody().getPassword());
+    currentLogin = response.getBody();
     srv.setCurrentLogin(currentLogin);
     return response;
   }
@@ -95,7 +97,7 @@ public class LoginUserControllerImpl implements LoginUserController{
   
   public String deleteLU() {
     getCurrentLU();
-    loginUserService.deleteLoginUserById(currentLogin.getLoginUserId(), currentLogin);
+    loginUserService.deleteLoginUserById(currentLogin);
     logout();
     return "LoginUser has been date deleted";
   }

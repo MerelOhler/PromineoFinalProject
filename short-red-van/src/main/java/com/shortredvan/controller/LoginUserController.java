@@ -22,12 +22,12 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.Parameter;
 
 @RequestMapping("/loginuser")
-@OpenAPIDefinition(info = @Info(title = "LoginUser Service"), 
-  servers = { @Server(url = "http://localhost:8080", description = "Local server.")})
+@OpenAPIDefinition(info = @Info(title = "LoginUser Service"),
+    servers = {@Server(url = "http://localhost:8080", description = "Local server.")})
 public interface LoginUserController {
   //@formatter:off
   @Operation(
-      summary = "Returns a list of LoginUsers",
+      summary = "Returns a list of LoginUsers. User needs to be logged in to access.",
       description = "Returns a list of LoginUsers",
       responses = {
           @ApiResponse(
@@ -39,6 +39,11 @@ public interface LoginUserController {
           @ApiResponse(
               responseCode = "400", 
               description = "The request parameters are invalid.", 
+              content = @Content(
+                  mediaType = "application/json")),
+          @ApiResponse(
+              responseCode = "403", 
+              description = "The user is not logged in or doesn't have the correct privileges.", 
               content = @Content(
                   mediaType = "application/json")),
           @ApiResponse(
@@ -57,7 +62,7 @@ public interface LoginUserController {
   public List<LoginUser> getAllLU();
   
   @Operation(
-      summary = "Returns a LoginUser with that specific id",
+      summary = "Returns a LoginUser with that specific id. User needs to be logged in to access.",
       description = "Returns a a LoginUsers given an id",
       responses = {
           @ApiResponse(
@@ -69,6 +74,11 @@ public interface LoginUserController {
           @ApiResponse(
               responseCode = "400", 
               description = "The request parameters are invalid.", 
+              content = @Content(
+                  mediaType = "application/json")),
+          @ApiResponse(
+              responseCode = "403", 
+              description = "The user is not logged in or doesn't have the correct privileges.", 
               content = @Content(
                   mediaType = "application/json")),
           @ApiResponse(
@@ -94,7 +104,7 @@ public interface LoginUserController {
   ResponseEntity<LoginUser> getLUById(@RequestParam int id);
   
   @Operation(
-      summary = "Returns LoginUsers that are in the party",
+      summary = "Returns LoginUsers that are in the party. User needs to be logged in to access.",
       description = "Returns a list of LoginUsers given an party id",
       responses = {
           @ApiResponse(
@@ -106,6 +116,11 @@ public interface LoginUserController {
           @ApiResponse(
               responseCode = "400", 
               description = "The request parameters are invalid.", 
+              content = @Content(
+                  mediaType = "application/json")),
+          @ApiResponse(
+              responseCode = "403", 
+              description = "The user is not logged in or doesn't have the correct privileges.", 
               content = @Content(
                   mediaType = "application/json")),
           @ApiResponse(
@@ -173,7 +188,7 @@ public interface LoginUserController {
   public boolean login(@RequestParam String email, @RequestParam String password);
   
   @Operation(
-      summary = "User is able to logout",
+      summary = "User is able to logout. User needs to be logged in to access.",
       description = "does not return anything, logs out current user",
       responses = {
           @ApiResponse(
@@ -195,10 +210,11 @@ public interface LoginUserController {
       }    
   )
   @GetMapping("/logout")
-  public void logout();
+  public String logout();
   
   @Operation(
-      summary = "User is able to add a new login user and log in as the new loginuser",
+      summary = "User is able to add a new login user and log in as the new loginuser. If User is already logged "
+          + "they will first be logged out.",
       description = "Creates new login user and logs in as the new login user. Login user can only be created"
           + "by the user themselves.",
       responses = {
@@ -229,7 +245,7 @@ public interface LoginUserController {
   public ResponseEntity<LoginUser> createLU (@RequestBody LoginUser loginUser) throws DuplicateFoundException;
   
   @Operation(
-      summary = "User is able to update an existing login user and log in as the new loginuser",
+      summary = "User is able to update the current login user. User needs to be logged in to access. ",
       description = "returns the updated loginuser",
       responses = {
           @ApiResponse(
@@ -241,6 +257,11 @@ public interface LoginUserController {
           @ApiResponse(
               responseCode = "400", 
               description = "The request parameters are invalid.", 
+              content = @Content(
+                  mediaType = "application/json")),
+          @ApiResponse(
+              responseCode = "403", 
+              description = "The user is not logged in or doesn't have the correct privileges.", 
               content = @Content(
                   mediaType = "application/json")),
           @ApiResponse(
@@ -264,7 +285,7 @@ public interface LoginUserController {
   public ResponseEntity<LoginUser> updateLU (@RequestBody LoginUser loginUser) throws DuplicateFoundException;
   
   @Operation(
-      summary = "LoginUser is DATE deleted, and is not actually deleted",
+      summary = "Current LoginUser is DATE deleted, and is not actually deleted. User needs to be logged in to access.",
       description = "returns a message whether the user has been deleted. User can only delete their own account",
       responses = {
           @ApiResponse(
@@ -276,6 +297,11 @@ public interface LoginUserController {
           @ApiResponse(
               responseCode = "400", 
               description = "The request parameters are invalid.", 
+              content = @Content(
+                  mediaType = "application/json")),
+          @ApiResponse(
+              responseCode = "403", 
+              description = "The user is not logged in or doesn't have the correct privileges.", 
               content = @Content(
                   mediaType = "application/json")),
           @ApiResponse(

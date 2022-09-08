@@ -1,15 +1,18 @@
 package com.shortredvan.service.implementation;
 
+import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.List;
+import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
-import com.shortredvan.entity.CurrentLogin;
+import com.shortredvan.entity.LoginUser;
 import com.shortredvan.entity.PartyLoginUser;
 import com.shortredvan.entity.PartyLoginUserDeleted;
 import com.shortredvan.entity.PartyLoginUserKey;
 import com.shortredvan.exception.DuplicateFoundException;
+import com.shortredvan.exception.FKConstraintException;
 import com.shortredvan.exception.ResourceNotFoundException;
 import com.shortredvan.repository.PartyLoginUserDeletedRepository;
 import com.shortredvan.repository.PartyLoginUserRepository;
@@ -51,19 +54,22 @@ public class PartyLoginUserServiceImpl implements PartyLoginUserService {
   }
 
   @Override
-  public PartyLoginUser createPLU(PartyLoginUser plu) {
-    try {
-      return pluRepository.save(plu);
-    } catch (DataIntegrityViolationException e) {
-      new DuplicateFoundException("PartyLoginUser", "Id", plu.getId().toString());
-      return null;
+  public PartyLoginUser createPLU(PartyLoginUser plu) throws FKConstraintException {
+    PartyLoginUserKey existingPLUK = plu.getId();
+    if (pluRepository.findById(existingPLUK).isEmpty()) {
+      try {
+        return pluRepository.save(plu);
+      } catch (DataIntegrityViolationException f) {
+        throw new FKConstraintException("PartyId", "LoginUserId");
+      }
     }
+    return null;
   }
 
 
   @Override
-  public void deletePLUsByLUId(int id, CurrentLogin currentLogin) {
-    List<PartyLoginUser> toDelete = getAllPLUsByLUId(id);
+  public void deletePLUsByLUId(LoginUser currentLogin) {
+    List<PartyLoginUser> toDelete = getAllPLUsByLUId(currentLogin.getLoginUserId());
     if (!toDelete.isEmpty()) {
       for (PartyLoginUser plu : toDelete) {
         addToDeleted(plu, currentLogin);
@@ -73,7 +79,7 @@ public class PartyLoginUserServiceImpl implements PartyLoginUserService {
   }
 
   @Override
-  public void deletePLUsByPartyId(int id, CurrentLogin currentLogin) {
+  public void deletePLUsByPartyId(int id, LoginUser currentLogin) {
     List<PartyLoginUser> toDelete = getAllPLUsByPartyId(id);
     if (!toDelete.isEmpty()) {
       for (PartyLoginUser plu : toDelete) {
@@ -84,7 +90,7 @@ public class PartyLoginUserServiceImpl implements PartyLoginUserService {
   }
 
   @Override
-  public void addToDeleted(PartyLoginUser plu, CurrentLogin currentLogin) {
+  public void addToDeleted(PartyLoginUser plu, LoginUser currentLogin) {
     PartyLoginUserDeleted plud = new PartyLoginUserDeleted();
     plud.setPartyId(plu.getId().getPartyId());
     plud.setLoginUserId(plu.getId().getLoginUserId());
@@ -96,7 +102,7 @@ public class PartyLoginUserServiceImpl implements PartyLoginUserService {
   }
 
   @Override
-  public void deletePLU(PartyLoginUser plu, CurrentLogin currentLogin) {
+  public void deletePLU(PartyLoginUser plu, LoginUser currentLogin) {
     addToDeleted(plu,currentLogin);
     pluRepository.delete(plu);
     
