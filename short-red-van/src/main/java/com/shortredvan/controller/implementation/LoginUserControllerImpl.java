@@ -76,8 +76,6 @@ public class LoginUserControllerImpl implements LoginUserController{
     //if already logged in then log other user out first
     logout();
     ResponseEntity<LoginUser> response = new ResponseEntity<LoginUser>(loginUserService.createLoginUser(loginUser),HttpStatus.CREATED);
-    if(response.getBody() == null) {
-      throw new DuplicateFoundException("LoginUser", "email", loginUser.getEmail());}
     currentLogin = response.getBody();
     srv.setCurrentLogin(currentLogin);
     return response;
